@@ -12,8 +12,12 @@
 			"jsx": true
 		},
 		"sourceType": "module"
-	},
+  },
+  "extends": ["eslint:recommended", "airbnb"],
 	"rules": {
+    "arrow-parens": "off",
+    "no-use-before-define": "off",
+    "operator-linebreak": "off",
 		"no-const-assign": "warn",
 		"no-this-before-super": "warn",
 		"no-undef": "warn",

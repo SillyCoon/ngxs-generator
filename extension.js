@@ -1,6 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+
+// node version - 12.14.1
+
 const vscode = require('vscode');
+const fs = require('fs').promises;
+const { helpers } = require('./action-generator');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -9,82 +14,82 @@ const vscode = require('vscode');
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "ngxs-generator" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('ngxs-generator.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Oh shit Im sorry!');
-  });
-
-  let action = vscode.commands.registerCommand('ngxs-generator.makeAction', async (actionsFileUri) => {
-
-    const actionName = await vscode.window.showInputBox({placeHolder: 'here is your ActionName...'});
+  const action = vscode.commands.registerCommand('ngxs-generator.makeAction', async (actionsFileUri) => {
+    const actionName = await vscode.window.showInputBox({ placeHolder: 'here is your ActionName...' }) || 'MyAction';
     if (verifyActionName(actionName)) {
-      const [upperCamelCaseActionName, upperSnakeCaseActionName, sentenceActionName] = makeActionNameInNeededNotations(actionName);
-
-      const stateName = parseStateNameFromUri(actionsFileUri || '');
+      const stateName = extractStateNameFromUri(actionsFileUri);
 
       if (stateName) {
-        vscode.window.showInformationMessage(stateName);
+        await fillActionFile(actionsFileUri, actionName, stateName);
       } else {
-        vscode.window.showErrorMessage('Some error just happened!');
+        vscode.window.showErrorMessage('Wrong file selected! Please select "my-actions.actions.ts"');
       }
+    } else {
+      vscode.window.showErrorMessage(`Wrong action name ${actionName}`);
     }
   });
 
-	context.subscriptions.push(disposable, action);
+  context.subscriptions.push(action);
 }
-
-// this method is called when your extension is deactivated
-function deactivate() {}
 
 module.exports = {
-	activate,
-	deactivate
-}
+  activate,
+};
 
-function makeActionNameInNeededNotations(actionName) {
-  return [actionName, toUpperSnakeCase(actionName), toSentence(actionName)];
-
-  function toUpperSnakeCase(str) {
-    return str.replace(/[A-Z]/g, c => `_${c}`).slice(1).toUpperCase();
-  }
-
-  function toSentence(str) {
-    return str.replace(/[A-Z]/g, c => ` ${c}`);
-  }
-}
-
-function parseStateNameFromUri(uri) {
+function extractStateNameFromUri(uri) {
+  if (!uri) return null;
   const splitted = uri.fsPath.split('/');
   const actionsFileName = splitted[splitted.length - 1];
   const splittedActionFileName = actionsFileName.split('.');
   if (splittedActionFileName[1] !== 'actions') {
-    vscode.window.showErrorMessage('Wrong file selected! Please select "my-actions.actions.ts"');
-  } else {
-    const kebabStateName = splittedActionFileName[0];
-    return kebabStateName[0].toUpperCase() +
-           kebabStateName.replace(/-\w/, chars => chars[1].toUpperCase()).slice(1);
+    return null;
   }
+  const kebabStateName = splittedActionFileName[0];
+  return kebabStateName[0].toUpperCase()
+    + kebabStateName.replace(/-\w/, chars => chars[1].toUpperCase()).slice(1);
 }
 
 function verifyActionName(name) {
+  function isUpperCamelCase(str) {
+    return /^[A-Z][A-Za-z]*$/.test(str);
+  }
+
   if (!name || !isUpperCamelCase(name)) {
     vscode.window.showErrorMessage(`Wrong action name ${name}! Please use UpperCamelCase`);
     return false;
-  } else {
-    return true;
+  }
+  return true;
+}
+
+async function fillActionFile(uri, actionName, stateName) {
+  try {
+    const [
+      pascalActionName,
+      upperSnakeActionName,
+      sentenceActionName,
+    ] = helpers.makeActionNameInNeededNotations(actionName);
+
+    const file = await vscode.workspace.openTextDocument(uri);
+    const text = file.getText();
+    const textWithActionType = addActionType(text, upperSnakeActionName, stateName, sentenceActionName);
+    const completeActionText = addActionModel(textWithActionType, pascalActionName, upperSnakeActionName);
+
+    await fs.writeFile(uri.fsPath, completeActionText);
+
+    await vscode.window.showTextDocument(file, { preview: false });
+
+    vscode.window.showInformationMessage(`Action ${actionName} successfully created!`);
+  } catch (e) {
+    vscode.window.showErrorMessage(`Error during action creation: ${e}`);
   }
 
-  function isUpperCamelCase(str) {
-    return /^[A-Z][A-Za-z]*$/.test(str);
+  function addActionType(txt, key, stateId, name) {
+    const actionType = helpers.makeActionTypeString(key, stateId, name);
+    return txt.replace(/enum ActionTypes\s*{/g, keep => `${keep} \n  ${actionType},`);
+  }
+
+  function addActionModel(txt, name, typeKey) {
+    const actionModel = helpers.makeActionModel(name, typeKey);
+    return `${txt.trim()}\n\n${actionModel}`;
   }
 }
