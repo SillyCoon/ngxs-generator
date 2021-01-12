@@ -2,7 +2,8 @@
   "name": "ngxs-generator",
   "icon": "./icon.png",
 	"displayName": "ngxs-generator",
-	"description": "code generator for ngxs",
+  "description": "code generator for ngxs",
+  "publisher": "SillyCoon",
   "version": "0.1.0",
   "repository": {
     "type": "git",
