@@ -5,7 +5,7 @@
 
 const vscode = require('vscode');
 const fs = require('fs').promises;
-const { helpers } = require('./action-generator');
+const { makeActionGenerator } = require('./action-generator');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -16,11 +16,12 @@ const { helpers } = require('./action-generator');
 function activate(context) {
   const action = vscode.commands.registerCommand('ngxs-generator.makeAction', async (actionsFileUri) => {
     const actionName = await vscode.window.showInputBox({ placeHolder: 'here is your ActionName...' }) || 'MyAction';
+
     if (verifyActionName(actionName)) {
       const stateName = extractStateNameFromUri(actionsFileUri);
 
       if (stateName) {
-        await fillActionFile(actionsFileUri, actionName, stateName);
+        await fillActionFile(actionsFileUri, actionName, stateName, context.extensionPath);
       } else {
         vscode.window.showErrorMessage('Wrong file selected! Please select "my-actions.actions.ts"');
       }
@@ -61,18 +62,17 @@ function verifyActionName(name) {
   return true;
 }
 
-async function fillActionFile(uri, actionName, stateName) {
+async function fillActionFile(uri, actionName, stateName, extensionPath) {
   try {
-    const [
-      pascalActionName,
-      upperSnakeActionName,
-      sentenceActionName,
-    ] = helpers.makeActionNameInNeededNotations(actionName);
+    const actionGenerator = makeActionGenerator(extensionPath, actionName, stateName);
 
     const file = await vscode.workspace.openTextDocument(uri);
     const text = file.getText();
-    const textWithActionType = addActionType(text, upperSnakeActionName, stateName, sentenceActionName);
-    const completeActionText = addActionModel(textWithActionType, pascalActionName, upperSnakeActionName);
+    const textWithActionType =
+      await addActionType(text, await actionGenerator.makeActionType());
+
+    const completeActionText =
+      await addActionModel(textWithActionType, await actionGenerator.makeActionModel());
 
     await fs.writeFile(uri.fsPath, completeActionText);
 
@@ -83,13 +83,11 @@ async function fillActionFile(uri, actionName, stateName) {
     vscode.window.showErrorMessage(`Error during action creation: ${e}`);
   }
 
-  function addActionType(txt, key, stateId, name) {
-    const actionType = helpers.makeActionTypeString(key, stateId, name);
-    return txt.replace(/enum ActionTypes\s*{/g, keep => `${keep} \n  ${actionType},`);
+  async function addActionType(txt, type) {
+    return txt.replace(/enum ActionTypes\s*{/g, keep => `${keep} \n  ${type},`);
   }
 
-  function addActionModel(txt, name, typeKey) {
-    const actionModel = helpers.makeActionModel(name, typeKey);
-    return `${txt.trim()}\n\n${actionModel}`;
+  async function addActionModel(txt, model) {
+    return `${txt.trim()}\n\n${model}`;
   }
 }
