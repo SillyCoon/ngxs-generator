@@ -6,6 +6,7 @@
 const vscode = require('vscode');
 const fs = require('fs').promises;
 const { makeActionGenerator } = require('./action-generator');
+const { appendActionTo } = require('./action-appender');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -68,26 +69,18 @@ async function fillActionFile(uri, actionName, stateName, extensionPath) {
 
     const file = await vscode.workspace.openTextDocument(uri);
     const text = file.getText();
-    const textWithActionType =
-      await addActionType(text, await actionGenerator.makeActionType());
 
-    const completeActionText =
-      await addActionModel(textWithActionType, await actionGenerator.makeActionModel());
+    const type = await actionGenerator.makeActionType();
+    const model = await actionGenerator.makeActionModel();
 
-    await fs.writeFile(uri.fsPath, completeActionText);
+    const textWithAction = appendActionTo(text, type, model);
+
+    await fs.writeFile(uri.fsPath, textWithAction);
 
     await vscode.window.showTextDocument(file, { preview: false });
 
     vscode.window.showInformationMessage(`Action ${actionName} successfully created!`);
   } catch (e) {
     vscode.window.showErrorMessage(`Error during action creation: ${e}`);
-  }
-
-  async function addActionType(txt, type) {
-    return txt.replace(/enum ActionTypes\s*{/g, keep => `${keep} \n  ${type},`);
-  }
-
-  async function addActionModel(txt, model) {
-    return `${txt.trim()}\n\n${model}`;
   }
 }

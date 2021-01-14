@@ -33,7 +33,6 @@ function makeActionGenerator(extensionPath, actionName, stateName) {
 
 function makeTemplateWorker() {
   return ({
-
     readTemplate: async (path, template) => (await fs.readFile(`${path}/templates/${template}.template.ts`)).toString(),
 
     formatStringTemplate: (string, args) => {
