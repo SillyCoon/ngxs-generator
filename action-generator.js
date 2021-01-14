@@ -1,4 +1,4 @@
-const fs = require('fs').promises;
+const { makeTemplate } = require('./template');
 
 const templates = {
   actionModel: 'action-model',
@@ -6,8 +6,6 @@ const templates = {
 };
 
 function makeActionGenerator(extensionPath, actionName, stateName) {
-  const templateWorker = makeTemplateWorker();
-
   return ({
     path: extensionPath,
     actionName,
@@ -18,34 +16,15 @@ function makeActionGenerator(extensionPath, actionName, stateName) {
     },
 
     async makeActionModel() {
-      const template = await templateWorker.readTemplate(this.path, templates.actionModel);
-      return templateWorker.formatStringTemplate(template, [this.actionName, this.actionName]);
+      const template = makeTemplate(this.path, templates.actionModel);
+      return template.fill([this.actionName, this.actionName]);
     },
 
     async makeActionType() {
-      const template = await templateWorker.readTemplate(this.path, templates.actionType);
-      return templateWorker.formatStringTemplate(template,
-        [this.actionName, this.stateName, this.sentenceActionName]);
+      const template = makeTemplate(this.path, templates.actionType);
+      return template.fill([this.actionName, this.stateName, this.sentenceActionName]);
     },
 
-  });
-}
-
-function makeTemplateWorker() {
-  return ({
-    readTemplate: async (path, template) => (await fs.readFile(`${path}/templates/${template}.template.ts`)).toString(),
-
-    formatStringTemplate: (string, args) => {
-      const format = (i, text) => {
-        const template = `{${i}}`;
-        if (text.includes(template) && args.length > i) {
-          return format(i + 1, text.replace(template, args[i]));
-        }
-        return text;
-      };
-
-      return format(0, string);
-    },
   });
 }
 

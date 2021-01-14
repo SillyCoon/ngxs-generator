@@ -3,8 +3,10 @@
 
 // node version - 12.14.1
 
+// eslint-disable-next-line import/no-unresolved
 const vscode = require('vscode');
 const fs = require('fs').promises;
+const { makeFile } = require('./file');
 const { makeActionGenerator } = require('./action-generator');
 const { appendActionTo } = require('./action-appender');
 
@@ -67,17 +69,17 @@ async function fillActionFile(uri, actionName, stateName, extensionPath) {
   try {
     const actionGenerator = makeActionGenerator(extensionPath, actionName, stateName);
 
-    const file = await vscode.workspace.openTextDocument(uri);
-    const text = file.getText();
+    const file = makeFile(uri.fsPath);
+    const text = await file.getText();
 
     const type = await actionGenerator.makeActionType();
     const model = await actionGenerator.makeActionModel();
 
     const textWithAction = appendActionTo(text, type, model);
 
-    await fs.writeFile(uri.fsPath, textWithAction);
+    await file.write(textWithAction);
 
-    await vscode.window.showTextDocument(file, { preview: false });
+    await vscode.window.showTextDocument(await file.getVsCodeFile(), { preview: false });
 
     vscode.window.showInformationMessage(`Action ${actionName} successfully created!`);
   } catch (e) {
