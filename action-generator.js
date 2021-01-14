@@ -7,7 +7,7 @@ const templates = {
 
 function makeActionGenerator(extensionPath, actionName, stateName) {
   return ({
-    path: extensionPath,
+    extensionPath,
     actionName,
     stateName,
 
@@ -16,12 +16,12 @@ function makeActionGenerator(extensionPath, actionName, stateName) {
     },
 
     async makeActionModel() {
-      const template = makeTemplate(this.path, templates.actionModel);
+      const template = makeTemplate(this.extensionPath, templates.actionModel);
       return template.fill([this.actionName, this.actionName]);
     },
 
     async makeActionType() {
-      const template = makeTemplate(this.path, templates.actionType);
+      const template = makeTemplate(this.extensionPath, templates.actionType);
       return template.fill([this.actionName, this.stateName, this.sentenceActionName]);
     },
 
