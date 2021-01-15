@@ -1,10 +1,10 @@
 {
   "name": "ngxs-generator",
-  "icon": "./icon.png",
+  "icon": "icon.png",
 	"displayName": "ngxs-generator",
   "description": "code generator for ngxs",
   "publisher": "SillyCoon",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/sillycoon/ngxs-generator.git"

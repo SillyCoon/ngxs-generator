@@ -3,9 +3,16 @@
 
 // node version - 12.14.1
 
+// eslint-disable-next-line import/no-unresolved
 const vscode = require('vscode');
 const fs = require('fs').promises;
-const { helpers } = require('./action-generator');
+const { makeFile } = require('./file');
+const { makeActionGenerator } = require('./action-generator');
+const { appendActionTo } = require('./parsers/action-parser');
+const { makeStateGenerator } = require('./state-generator');
+const { appendActionFunction } = require('./parsers/state-parser');
+const { makeImportGenerator } = require('./import-generator');
+const { appendImport } = require('./parsers/import-parser');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -16,11 +23,15 @@ const { helpers } = require('./action-generator');
 function activate(context) {
   const action = vscode.commands.registerCommand('ngxs-generator.makeAction', async (actionsFileUri) => {
     const actionName = await vscode.window.showInputBox({ placeHolder: 'here is your ActionName...' }) || 'MyAction';
+
     if (verifyActionName(actionName)) {
       const stateName = extractStateNameFromUri(actionsFileUri);
 
+      const stateFileUri = actionsFileUri.fsPath.replace('actions.ts', 'state.ts');
+
       if (stateName) {
-        await fillActionFile(actionsFileUri, actionName, stateName);
+        await fillActionFile(actionsFileUri.fsPath, actionName, stateName, context.extensionPath);
+        await fillStateFile(stateFileUri, actionName, stateName, context.extensionPath);
       } else {
         vscode.window.showErrorMessage('Wrong file selected! Please select "my-actions.actions.ts"');
       }
@@ -61,35 +72,44 @@ function verifyActionName(name) {
   return true;
 }
 
-async function fillActionFile(uri, actionName, stateName) {
+async function fillStateFile(path, actionName, stateName, extensionPath) {
   try {
-    const [
-      pascalActionName,
-      upperSnakeActionName,
-      sentenceActionName,
-    ] = helpers.makeActionNameInNeededNotations(actionName);
+    const file = makeFile(path);
+    const text = await file.getText();
 
-    const file = await vscode.workspace.openTextDocument(uri);
-    const text = file.getText();
-    const textWithActionType = addActionType(text, upperSnakeActionName, stateName, sentenceActionName);
-    const completeActionText = addActionModel(textWithActionType, pascalActionName, upperSnakeActionName);
+    const stateGenerator = makeStateGenerator(extensionPath, actionName, stateName);
+    const actionFunction = await stateGenerator.makeActionStateFunction();
+    const stateWithActionFunction = appendActionFunction(text, actionFunction, stateName);
 
-    await fs.writeFile(uri.fsPath, completeActionText);
+    const importGenerator = makeImportGenerator(extensionPath, actionName, stateName);
+    const importStatement = await importGenerator.makeImportStatement();
+    const completeState =
+      appendImport(stateWithActionFunction, importStatement, stateName, actionName);
 
-    await vscode.window.showTextDocument(file, { preview: false });
+    await file.write(completeState);
+  } catch (e) {
+    vscode.window.showErrorMessage(`Error during state action function creation: ${e}`);
+  }
+}
+
+async function fillActionFile(path, actionName, stateName, extensionPath) {
+  try {
+    const actionGenerator = makeActionGenerator(extensionPath, actionName, stateName);
+
+    const file = makeFile(path);
+    const text = await file.getText();
+
+    const type = await actionGenerator.makeActionType();
+    const model = await actionGenerator.makeActionModel();
+
+    const textWithAction = appendActionTo(text, type, model);
+
+    await file.write(textWithAction);
+
+    await vscode.window.showTextDocument(await file.getVsCodeFile(), { preview: false });
 
     vscode.window.showInformationMessage(`Action ${actionName} successfully created!`);
   } catch (e) {
     vscode.window.showErrorMessage(`Error during action creation: ${e}`);
-  }
-
-  function addActionType(txt, key, stateId, name) {
-    const actionType = helpers.makeActionTypeString(key, stateId, name);
-    return txt.replace(/enum ActionTypes\s*{/g, keep => `${keep} \n  ${actionType},`);
-  }
-
-  function addActionModel(txt, name, typeKey) {
-    const actionModel = helpers.makeActionModel(name, typeKey);
-    return `${txt.trim()}\n\n${actionModel}`;
   }
 }
