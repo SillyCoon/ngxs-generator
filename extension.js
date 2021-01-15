@@ -11,6 +11,8 @@ const { makeActionGenerator } = require('./action-generator');
 const { appendActionTo } = require('./parsers/action-parser');
 const { makeStateGenerator } = require('./state-generator');
 const { appendActionFunction } = require('./parsers/state-parser');
+const { makeImportGenerator } = require('./import-generator');
+const { appendImport } = require('./parsers/import-parser');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -72,14 +74,19 @@ function verifyActionName(name) {
 
 async function fillStateFile(path, actionName, stateName, extensionPath) {
   try {
-    const stateGenerator = makeStateGenerator(extensionPath, actionName, stateName);
     const file = makeFile(path);
     const text = await file.getText();
 
+    const stateGenerator = makeStateGenerator(extensionPath, actionName, stateName);
     const actionFunction = await stateGenerator.makeActionStateFunction();
     const stateWithActionFunction = appendActionFunction(text, actionFunction, stateName);
 
-    await file.write(stateWithActionFunction);
+    const importGenerator = makeImportGenerator(extensionPath, actionName, stateName);
+    const importStatement = await importGenerator.makeImportStatement();
+    const completeState =
+      appendImport(stateWithActionFunction, importStatement, stateName, actionName);
+
+    await file.write(completeState);
   } catch (e) {
     vscode.window.showErrorMessage(`Error during state action function creation: ${e}`);
   }
