@@ -13,7 +13,9 @@ function makeTemplate(path, templateName) {
         return text;
       };
 
-      return format(0, await templateFile.getText());
+      const templateText = await templateFile.getText();
+
+      return format(0, templateText);
     },
   });
 }

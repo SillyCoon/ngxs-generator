@@ -1,4 +1,5 @@
 const { makeTemplate } = require('./template');
+const { sentence } = require('./name-ops');
 
 const templates = {
   actionModel: 'action-model',
@@ -12,7 +13,7 @@ function makeActionGenerator(extensionPath, actionName, stateName) {
     stateName,
 
     get sentenceActionName() {
-      return this.actionName.replace(/[A-Z]/g, c => ` ${c}`);
+      return sentence(this.actionName);
     },
 
     async makeActionModel() {

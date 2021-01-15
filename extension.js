@@ -8,7 +8,9 @@ const vscode = require('vscode');
 const fs = require('fs').promises;
 const { makeFile } = require('./file');
 const { makeActionGenerator } = require('./action-generator');
-const { appendActionTo } = require('./action-appender');
+const { appendActionTo } = require('./parsers/action-parser');
+const { makeStateGenerator } = require('./state-generator');
+const { appendActionFunction } = require('./parsers/state-parser');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -23,8 +25,11 @@ function activate(context) {
     if (verifyActionName(actionName)) {
       const stateName = extractStateNameFromUri(actionsFileUri);
 
+      const stateFileUri = actionsFileUri.fsPath.replace('actions.ts', 'state.ts');
+
       if (stateName) {
-        await fillActionFile(actionsFileUri, actionName, stateName, context.extensionPath);
+        await fillActionFile(actionsFileUri.fsPath, actionName, stateName, context.extensionPath);
+        await fillStateFile(stateFileUri, actionName, stateName, context.extensionPath);
       } else {
         vscode.window.showErrorMessage('Wrong file selected! Please select "my-actions.actions.ts"');
       }
@@ -65,11 +70,26 @@ function verifyActionName(name) {
   return true;
 }
 
-async function fillActionFile(uri, actionName, stateName, extensionPath) {
+async function fillStateFile(path, actionName, stateName, extensionPath) {
+  try {
+    const stateGenerator = makeStateGenerator(extensionPath, actionName, stateName);
+    const file = makeFile(path);
+    const text = await file.getText();
+
+    const actionFunction = await stateGenerator.makeActionStateFunction();
+    const stateWithActionFunction = appendActionFunction(text, actionFunction, stateName);
+
+    await file.write(stateWithActionFunction);
+  } catch (e) {
+    vscode.window.showErrorMessage(`Error during state action function creation: ${e}`);
+  }
+}
+
+async function fillActionFile(path, actionName, stateName, extensionPath) {
   try {
     const actionGenerator = makeActionGenerator(extensionPath, actionName, stateName);
 
-    const file = makeFile(uri.fsPath);
+    const file = makeFile(path);
     const text = await file.getText();
 
     const type = await actionGenerator.makeActionType();
