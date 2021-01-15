@@ -32,6 +32,10 @@ export class MyAction {
 
 * Action model and type generation by right-click on `state-name.actions.ts ` file
 
+### 0.1.1
+
+* Complete action creation - model and type + create action handler function in state
+
 -----------------------------------------------------------------------------------------------------------
 
 ### More info
