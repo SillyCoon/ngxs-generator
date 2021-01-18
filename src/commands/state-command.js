@@ -1,24 +1,28 @@
 // eslint-disable-next-line import/no-unresolved
 const vscode = require('vscode');
 const { makeFile } = require('../file');
-const { makeConstFileText } = require('../generators/file-generators');
+const { creators, templates } = require('../generators/file-generator');
 const { kebab } = require('../name-ops');
 
 async function makeConstFile(extensionPath, folder, stateName) {
+  makeStateStructureFile(extensionPath, folder, stateName, 'const', makeConstFileText);
+}
+
+async function makeStateStructureFile(extensionPath, folder, stateName, fileType, textMaker) {
   try {
-    const constText = await makeConstFileText(extensionPath, stateName);
-    const constFile = makeFile(`${folder}/${kebab(stateName)}.const.ts`);
-    await constFile.write(constText);
+    const text = await textMaker(extensionPath, stateName);
+    const file = makeFile(`${folder}/${kebab(stateName)}.${fileType}.ts`);
+    await file.write(text);
   } catch (e) {
-    vscode.window.showErrorMessage(`Error in ${kebab(stateName)}.const.ts file creation: ${e.message}`);
+    vscode.window.showErrorMessage(`Error in ${kebab(stateName)}.${fileType}.ts file creation: ${e.message}`);
   }
 }
 
 async function executeCreateStateCommand(context, folderUri, stateName) {
   Promise.all(
-    [
-      makeConstFile(context.extensionPath, folderUri.fsPath, stateName),
-    ],
+    Object.keys(templates).map((fileType, i) => {
+      return makeStateStructureFile(context.extensionPath, folderUri.fsPath, stateName, fileType, creators[i]);
+    }),
   ).catch((v) => vscode.window.showErrorMessage(`Error in state creation ${v}`));
 }
 
