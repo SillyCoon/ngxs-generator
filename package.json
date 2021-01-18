@@ -24,7 +24,11 @@
 			{
 				"command": "ngxs-generator.makeAction",
 				"title": "Make Ngxs Action"
-			}
+      },
+      {
+        "command": "ngxs-generator.makeState",
+        "title": "Make Ngxs State structure"
+      }
 		],
 		"menus": {
 			"explorer/context": [
@@ -32,7 +36,11 @@
 					"command": "ngxs-generator.makeAction",
 					"group": "mygroup1",
 					"when": "resourceLangId == typescript"
-				}
+        },
+        {
+          "command": "ngxs-generator.makeState",
+          "group": "mygroup1"
+        }
 			]
 		}
 	},
