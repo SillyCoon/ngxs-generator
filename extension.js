@@ -5,13 +5,12 @@
 
 // eslint-disable-next-line import/no-unresolved
 const vscode = require('vscode');
-const fs = require('fs').promises;
 const { makeFile } = require('./file');
-const { makeActionGenerator } = require('./action-generator');
+const { makeActionGenerator } = require('./generators/action-generator');
 const { appendActionTo } = require('./parsers/action-parser');
-const { makeStateGenerator } = require('./state-generator');
+const { makeStateGenerator } = require('./generators/state-generator');
 const { appendActionFunction } = require('./parsers/state-parser');
-const { makeImportGenerator } = require('./import-generator');
+const { makeImportGenerator } = require('./generators/import-generator');
 const { appendImport } = require('./parsers/import-parser');
 
 // this method is called when your extension is activated

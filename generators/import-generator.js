@@ -1,5 +1,5 @@
-const { makeTemplate } = require('./template');
-const { kebab } = require('./name-ops');
+const { makeTemplate } = require('../template');
+const { kebab } = require('../name-ops');
 
 const templates = {
   import: 'import',
