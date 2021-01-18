@@ -53,10 +53,14 @@ async function fillActionFile(path, actionName, stateName, extensionPath) {
 async function executeCreateActionCommand(context, actionsFileUri, actionName, stateName) {
   const stateFileUri = actionsFileUri.fsPath.replace('actions.ts', 'state.ts');
 
-  await fillActionFile(actionsFileUri.fsPath, actionName, stateName, context.extensionPath);
-  await fillStateFile(stateFileUri, actionName, stateName, context.extensionPath);
+  return Promise.all(
+    [
+      fillActionFile(actionsFileUri.fsPath, actionName, stateName, context.extensionPath),
+      fillStateFile(stateFileUri, actionName, stateName, context.extensionPath),
+    ],
+  );
 }
 
 module.exports = {
   executeCreateActionCommand,
-}
+};

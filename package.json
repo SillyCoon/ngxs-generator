@@ -16,7 +16,8 @@
 		"Snippets"
 	],
 	"activationEvents": [
-		"onCommand:ngxs-generator.makeAction"
+    "onCommand:ngxs-generator.makeAction",
+    "onCommand:ngxs-generator.makeState"
 	],
 	"main": "./extension.js",
 	"contributes": {

@@ -6,6 +6,7 @@
 // eslint-disable-next-line import/no-unresolved
 const vscode = require('vscode');
 const { executeCreateActionCommand } = require('./commands/action-command');
+const { executeCreateStateCommand } = require('./commands/state-command');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -30,8 +31,15 @@ function activate(context) {
     }
   });
 
-  const state = vscode.commands.registerCommand('ngxs-generator.makeState', async () => {
+  const state = vscode.commands.registerCommand('ngxs-generator.makeState', async (stateFolderUri) => {
     const stateName = await vscode.window.showInputBox({ placeHolder: 'here is your StateName...' }) || 'MyState';
+
+    if (stateName) {
+      await executeCreateStateCommand(context, stateFolderUri, stateName);
+      vscode.window.showInformationMessage('State was successfully created!');
+    } else {
+      vscode.window.showErrorMessage(`Wrong state name ${stateName}!`);
+    }
   });
 
   context.subscriptions.push(action, state);
