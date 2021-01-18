@@ -1,5 +1,5 @@
-const { makeTemplate } = require('./template');
-const { sentence } = require('./name-ops');
+const { makeTemplate } = require('../template');
+const { sentence } = require('../name-ops');
 
 const templates = {
   actionModel: 'action-model',

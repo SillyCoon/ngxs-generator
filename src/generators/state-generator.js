@@ -1,5 +1,5 @@
-const { makeTemplate } = require('./template');
-const { lowerFirstChar } = require('./name-ops');
+const { makeTemplate } = require('../template');
+const { lowerFirstChar } = require('../name-ops');
 
 const templates = {
   actionStateFunction: 'action-state-function',

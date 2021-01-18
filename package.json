@@ -4,7 +4,7 @@
 	"displayName": "ngxs-generator",
 	"description": "code generator for ngxs",
 	"publisher": "SillyCoon",
-	"version": "0.2.0",
+	"version": "1.0.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/sillycoon/ngxs-generator.git"
@@ -16,7 +16,8 @@
 		"Snippets"
 	],
 	"activationEvents": [
-		"onCommand:ngxs-generator.makeAction"
+    "onCommand:ngxs-generator.makeAction",
+    "onCommand:ngxs-generator.makeState"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -24,7 +25,11 @@
 			{
 				"command": "ngxs-generator.makeAction",
 				"title": "Make Ngxs Action"
-			}
+      },
+      {
+        "command": "ngxs-generator.makeState",
+        "title": "Make Ngxs State structure"
+      }
 		],
 		"menus": {
 			"explorer/context": [
@@ -32,7 +37,11 @@
 					"command": "ngxs-generator.makeAction",
 					"group": "mygroup1",
 					"when": "resourceLangId == typescript"
-				}
+        },
+        {
+          "command": "ngxs-generator.makeState",
+          "group": "mygroup1"
+        }
 			]
 		}
 	},
