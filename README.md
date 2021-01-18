@@ -62,7 +62,7 @@ export class MyStateState {
 
 * Action model and type generation by right-click on `state-name.actions.ts ` file
 
-### 0.1.1
+### 0.2.0
 
 * Complete action creation - model and type + create action handler function in state
 
