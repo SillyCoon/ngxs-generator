@@ -144,6 +144,10 @@ export class MyStateState {
 
 * Add State files structure generation
 
+### 1.0.1
+
+* Fix module file name
+
 -----------------------------------------------------------------------------------------------------------
 
 ### More info

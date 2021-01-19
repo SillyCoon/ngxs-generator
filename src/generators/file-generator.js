@@ -19,7 +19,7 @@ function makeStateFileText(extensionPath, stateName) {
   return template.fill([kebab(stateName), stateName, stateName, stateName, stateName]);
 }
 
-function makeActionsFileText(extensionPath, stateName) {
+function makeActionsFileText(extensionPath) {
   const template = makeTemplate(extensionPath, templates.actions);
   return template.fill([]);
 }
@@ -35,11 +35,9 @@ function makeSelectorsFileText(extensionPath, stateName) {
 }
 
 module.exports = {
-  creators: [
-    makeConstFileText,
-    makeStateFileText,
-    makeActionsFileText,
-    makeModuleFileText,
-    makeSelectorsFileText],
-  templates,
+  makeConstFileText,
+  makeStateFileText,
+  makeActionsFileText,
+  makeModuleFileText,
+  makeSelectorsFileText,
 };
