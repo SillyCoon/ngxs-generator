@@ -19,7 +19,7 @@ function activate(context) {
     const actionName = await vscode.window.showInputBox({ placeHolder: 'here is your ActionName...' }) || 'MyAction';
 
     if (verifyActionName(actionName)) {
-      const stateName = extractStateNameFromUri(actionsFileUri);
+      const stateName = extractStateNameFromUri(actionsFileUri.fsPath);
 
       if (stateName) {
         executeCreateActionCommand(context, actionsFileUri, actionName, stateName);
@@ -45,13 +45,9 @@ function activate(context) {
   context.subscriptions.push(action, state);
 }
 
-module.exports = {
-  activate,
-};
-
 function extractStateNameFromUri(uri) {
   if (!uri) return null;
-  const splitted = uri.fsPath.split('/');
+  const splitted = uri.split('/');
   const actionsFileName = splitted[splitted.length - 1];
   const splittedActionFileName = actionsFileName.split('.');
   if (splittedActionFileName[1] !== 'actions') {
@@ -59,7 +55,7 @@ function extractStateNameFromUri(uri) {
   }
   const kebabStateName = splittedActionFileName[0];
   return kebabStateName[0].toUpperCase()
-    + kebabStateName.replace(/-\w/, chars => chars[1].toUpperCase()).slice(1);
+    + kebabStateName.replace(/-\w/g, chars => chars[1].toUpperCase()).slice(1);
 }
 
 function verifyActionName(name) {
@@ -73,3 +69,8 @@ function verifyActionName(name) {
   }
   return true;
 }
+
+module.exports = {
+  activate,
+  extractStateNameFromUri,
+};

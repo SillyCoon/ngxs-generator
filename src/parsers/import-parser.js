@@ -2,6 +2,7 @@ const { kebab } = require('../name-ops');
 
 function appendImport(text, importStatement, stateName, actionName) {
   const importRegexp = /import.+from.+;/;
+  // eslint-disable-next-line no-useless-escape
   const alreadyHasImportRegexp = new RegExp(`\\s\*\\\}\(\?\=\\s\*from\\s\+\(\'\|"\).\\\/${kebab(stateName)}.actions\)`);
 
   if (alreadyHasImportRegexp.test(text)) {

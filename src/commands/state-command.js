@@ -1,11 +1,13 @@
 // eslint-disable-next-line import/no-unresolved
 const vscode = require('vscode');
 const { makeFile } = require('../file');
-const { makeConstFileText,
+const {
+  makeConstFileText,
   makeStateFileText,
   makeActionsFileText,
   makeModuleFileText,
-  makeSelectorsFileText } = require('../generators/file-generator');
+  makeSelectorsFileText,
+} = require('../generators/file-generator');
 const { kebab } = require('../name-ops');
 
 async function executeCreateStateCommand(context, folderUri, stateName) {
