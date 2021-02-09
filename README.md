@@ -152,7 +152,7 @@ export class MyStateState {
 
 * Fix long state name parsing (3+ words)
 
-### 1.0.3
+### 1.0.4
 
 * Semantic releases enabled
 
