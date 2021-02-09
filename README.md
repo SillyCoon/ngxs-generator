@@ -148,6 +148,14 @@ export class MyStateState {
 
 * Fix module file name
 
+### 1.0.2
+
+* Fix long state name parsing (3+ words)
+
+### 1.0.3
+
+* Semantic releases enabled
+
 -----------------------------------------------------------------------------------------------------------
 
 ### More info
