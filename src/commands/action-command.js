@@ -18,7 +18,7 @@ async function fillStateFile(path, actionName, stateName, extensionPath) {
     const stateWithActionFunction = appendActionFunction(text, actionFunction, stateName);
 
     const importGenerator = makeImportGenerator(extensionPath, actionName, stateName);
-    const importStatement = await importGenerator.makeImportStatement();
+    const importStatement = await importGenerator.makeImportStatement('actions');
     const completeState =
       appendImport(stateWithActionFunction, importStatement, stateName, actionName);
 
