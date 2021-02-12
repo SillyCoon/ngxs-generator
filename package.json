@@ -4,7 +4,7 @@
   "displayName": "ngxs-generator",
   "description": "code generator for ngxs",
   "publisher": "SillyCoon",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "private": "true",
   "repository": {
     "type": "git",
