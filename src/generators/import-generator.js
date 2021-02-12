@@ -10,9 +10,9 @@ function makeImportGenerator(extensionPath, actionName, stateName) {
     extensionPath,
     stateName,
 
-    async makeImportStatement() {
+    async makeImportStatement(type) {
       const template = makeTemplate(this.extensionPath, templates.import);
-      return template.fill([actionName, `./${kebab(stateName)}.state.ts`]);
+      return template.fill([actionName, `./${kebab(stateName)}.${type}`]);
     },
 
   });
